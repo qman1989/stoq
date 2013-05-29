@@ -413,6 +413,16 @@ class TestClient(_PersonFacetTest, DomainTest):
         client._set_is_active(value=True)
         self.assertTrue(client.is_active)
 
+    def test_get_active_clients(self):
+        table = Client
+        active_clients = table.get_active_clients(self.store).count()
+        client1 = self.create_client()
+        client1.status = table.STATUS_SOLVENT
+        one_more_active_client = table.get_active_clients(self.store).count()
+        client2 = self.create_client()
+        client2.status = table.STATUS_INACTIVE
+        self.assertEquals(active_clients + 1, one_more_active_client)
+
     def test_getclient_sales(self):
         client = self.store.find(Client)
         assert not client.is_empty()
@@ -1057,6 +1067,18 @@ class TestTransporter(_PersonFacetTest, DomainTest):
         transporter = self.create_transporter()
         one_more = transporter.get_active_transporters(self.store).count()
         self.assertEqual(count + 1, one_more)
+
+
+class TestClientView(DomainTest):
+    def test_get_active_clients(self):
+        client1 = self.create_client()
+        client1.status = Client.STATUS_INACTIVE
+
+        total_clients = self.store.find(Client).count()
+        actives = ClientView.get_active_clients(store=self.store).count()
+
+        # There is one client that is not active.
+        self.assertEquals(total_clients, (actives + 1))
 
 
 class TestClientSalaryHistory(DomainTest):
