@@ -258,6 +258,11 @@ class TillApp(ShellApp):
         # TODO: Maybe change the sale status to ORDERED
         sale = store.fetch(order_view.sale)
         retval = run_dialog(SalePaymentsEditor, self, store, sale)
+        for payment in sale.payments:
+            if payment.is_preview():
+                payment.set_pending()
+            if payment.is_pending():
+                payment.pay()
 
         if store.confirm(retval):
             self.refresh()
