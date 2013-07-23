@@ -159,7 +159,7 @@ class _FilterItem(object):
 class MaintenanceApp(ShellApp):
     """Maintenance app"""
 
-    app_title = _(u'Maintenance')
+    app_title = _(u'Serviços')
     gladefile = 'maintenance'
     search_spec = WorkOrderView
     search_label = _(u'matching:')
