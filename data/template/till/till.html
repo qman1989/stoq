@@ -23,18 +23,28 @@
 <%include file="till-daily-movement-sales.html" />
 <%include file="till-daily-movement-lonely-payments.html" args="payments=report.lonely_in_payments" />
 
-<h3>${ _("Output Payments:") }</h3>
-<%include file="till-daily-movement-purchases.html" />
-<%include file="till-daily-movement-lonely-payments.html" args="payments=report.lonely_out_payments" />
-<%include file="till-daily-movement-return-sales.html" />
+% if report.purchases or report.lonely_out_payments or report.return_sales:
+  <h3>${ _("Output Payments:") }</h3>
+  <%include file="till-daily-movement-purchases.html" />
+  <%include file="till-daily-movement-lonely-payments.html" args="payments=report.lonely_out_payments" />
+  <%include file="till-daily-movement-return-sales.html" />
+% endif
 
-<h3>${ _("Till Supply/Removal Operations:") }</h3>
-<%include file="till-daily-movement-supplies.html" />
-<%include file="till-daily-movement-removals.html" />
+% if report.till_supplies or report.till_removals:
+  <h3>${ _("Till Supply/Removal Operations:") }</h3>
+  <%include file="till-daily-movement-supplies.html" />
+  <%include file="till-daily-movement-removals.html" />
+% endif
 
 <h3>${ _("Summary:") }</h3>
-<%include file="till-daily-movement-summary.html" />
-<%include file="till-daily-movement-card-summary.html" />
+<div id="summary">
+  <div>
+  <%include file="till-daily-movement-summary.html" />
+  </div>
+  <div>
+  <%include file="till-daily-movement-card-summary.html" />
+  </div>
+</div>
 
 <br/><br/><br/>
 <h3>${ _("Observations:") }</h3>

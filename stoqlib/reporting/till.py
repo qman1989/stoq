@@ -26,6 +26,8 @@
 from storm.expr import And, Eq
 
 from stoqlib.database.expr import Date
+from stoqlib.domain.sale import Sale
+from stoqlib.domain.payment.card import CreditCardData
 from stoqlib.domain.payment.payment import Payment
 from stoqlib.domain.payment.views import InPaymentView, OutPaymentView
 from stoqlib.domain.till import TillEntry
@@ -74,10 +76,25 @@ class TillDailyMovementReport(HTMLReport):
         method_summary = {}
         self.card_summary = {}
 
-        for p in store.find(InPaymentView, query).order_by(Payment.identifier):
+        for p in store.find(InPaymentView, query).order_by(Sale.identifier, Payment.identifier):
             if p.sale:
-                sale_payments = self.sales.setdefault(p.sale, [])
-                sale_payments.append(p)
+                sale_payments = self.sales.setdefault(p.sale, {})
+                details = ''
+                method_desc = p.method.get_description()
+                if p.card_data:
+                    if p.card_data.card_type == CreditCardData.TYPE_DEBIT:
+                        method_desc += ' ' + _('Debit')
+                    else:
+                        method_desc +=  ' ' + _(u'Credit')
+                    details = '%s - %s - %s' % (p.card_data.auth,
+                        p.card_data.provider.short_name or '',
+                        p.card_data.device.description or '')
+
+                key = (method_desc, details)
+                sale_payments.setdefault(key, [0, 0])
+                sale_payments[key][0] += p.value
+                sale_payments[key][1] += 1
+
             else:
                 self.lonely_in_payments.append(p)
 
