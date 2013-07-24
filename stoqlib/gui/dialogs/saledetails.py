@@ -323,7 +323,14 @@ class SaleDetailsDialog(BaseEditor):
         self._run_comments_editor(item=self.comments_list.get_selected())
 
     def on_print_button__clicked(self, button):
-        print_report(SaleOrderReport, self.model.sale)
+        from stoqlib.domain.workorder import WorkOrder
+        from plugins.optical.opticalreport import OpticalWorkOrderReceiptReport
+        sale = self.model.sale
+        workorders = list(WorkOrder.find_by_sale(sale.store, sale))
+        if workorders:
+            print_report(OpticalWorkOrderReceiptReport, workorders)
+        else:
+            print_report(SaleOrderReport, self.model.sale)
 
     def on_print_bills__clicked(self, button):
         # Remove cancelled and not bill payments
