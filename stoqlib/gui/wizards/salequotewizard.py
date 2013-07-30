@@ -107,10 +107,9 @@ class StartSaleQuoteStep(WizardEditorStep):
         self._client_credit_set_visible(bool(self.client.read()))
 
     def _client_credit_set_visible(self, visible):
-        if visible:
+        if visible and self.model.client:
             self.client_credit.set_text(
-                self.model.client.credit_account_balance.format(precision=2)
-            )
+                self.model.client.credit_account_balance.format(precision=2))
         self.client_credit.set_visible(visible)
         self.client_credit_lbl.set_visible(visible)
 

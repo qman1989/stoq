@@ -171,9 +171,9 @@ class OpticalStartSaleQuoteStep(WizardEditorStep):
 
     def on_client__changed(self, widget):
         self.toogle_client_details()
-        self.client_credit.set_text(
-            self.model.client.credit_account_balance.format(precision=2)
-        )
+        if self.model.client:
+            self.client_credit.set_text(
+                self.model.client.credit_account_balance.format(precision=2))
 
     def on_client_details__clicked(self, button):
         client = self.model.client
