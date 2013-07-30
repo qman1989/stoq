@@ -28,7 +28,7 @@
             <tr>
               <td>${ _("Code") }</td>
               <td>${ _("Item") }</td>
-              <td>${ _("Quantity") }</td>
+              <td>${ _("Qtd") }</td>
               <td>${ _("Price") }</td>
               <td>${ _("Total") }</td>
             </tr>
@@ -67,10 +67,12 @@
                     <td>${ value }</td>
                 </tr>
                 % endfor
-                <tr>
-                    <td>${ _('Faltando') }</td>
-                    <td>${ report.sale.get_total_to_pay() }</td>
-                </tr>
+                % if report.sale.get_total_to_pay():
+                    <tr>
+                        <td>${ _('Faltando') }</td>
+                        <td>${ report.sale.get_total_to_pay() }</td>
+                    </tr>
+                % endif
             </tbody>
         </table>
     </div>

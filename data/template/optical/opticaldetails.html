@@ -15,17 +15,15 @@
         % if optical_data.medic:
             <tr>
               <td>${ _("Medic") }:</td>
-              <td>${ optical_data.medic.person.name }</td>
-              <td>${ _("UPID") }:</td>
-              <td>${ optical_data.medic.crm_number }</td>
+              <td colspan="3">${ optical_data.medic.person.name } (${ optical_data.medic.crm_number })</td>
             </tr>
         % endif
 
         <tr>
           <td>${ _("Sale #") }:</td>
           <td>${ report.sale.identifier }</td>
-          <td>${ _("Work Order #") }:</td>
-          <td>${ workorder.identifier }</td>
+          <td></td>
+          <td></td>
         </tr>
         <tr>
           <td>${ _("Open Date") }:</td>
@@ -41,7 +39,7 @@
         <tr>
           <td>${ _("Code") }</td>
           <td>${ _("Item") }</td>
-          <td>${ _("Quantity") }</td>
+          <td>${ _("Qtd") }</td>
         </tr>
       </thead>
 
@@ -58,5 +56,5 @@
 
     <p>
       <b>${ _('Observations') }</b><br/>
-      ${ workorder.defect_reported }
+      ${ workorder.defect_reported or '' }
     </p>

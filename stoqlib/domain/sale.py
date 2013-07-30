@@ -33,8 +33,8 @@ from decimal import Decimal
 from kiwi.currency import currency
 from kiwi.python import Settable
 from stoqdrivers.enum import TaxType
-from storm.expr import (And, Avg, Count, LeftJoin, Join, Max,
-                        Or, Sum, Alias, Select, Cast, Eq, Coalesce)
+from storm.expr import (And, Avg, Coalesce, Count, LeftJoin, Join, Max,
+                        Or, Sum, Alias, Select, Cast, Eq)
 from storm.info import ClassAlias
 from storm.references import Reference, ReferenceSet
 from zope.interface import implementer
@@ -1769,15 +1769,15 @@ class SaleView(Viewable):
     branch_name = Coalesce(NullIf(Company.fancy_name, u''), Person_Branch.name)
 
     # Summaries
-    v_ipi = Field('_sale_item', 'v_ipi')
-    subtotal = Field('_sale_item', 'subtotal')
-    total_quantity = Field('_sale_item', 'total_quantity')
-    total = Field('_sale_item', 'subtotal') - \
+    v_ipi = Coalesce(Field('_sale_item', 'v_ipi'), 0)
+    subtotal = Coalesce(Field('_sale_item', 'subtotal'), 0)
+    total_quantity = Coalesce(Field('_sale_item', 'total_quantity'), 0)
+    total = Coalesce(Field('_sale_item', 'subtotal'), 0) - \
         Sale.discount_value + Sale.surcharge_value
 
     tables = [
         Sale,
-        Join(SaleItemSummary, Field('_sale_item', 'sale_id') == Sale.id),
+        LeftJoin(SaleItemSummary, Field('_sale_item', 'sale_id') == Sale.id),
         LeftJoin(Branch, Sale.branch_id == Branch.id),
         LeftJoin(Client, Sale.client_id == Client.id),
         LeftJoin(SalesPerson, Sale.salesperson_id == SalesPerson.id),
