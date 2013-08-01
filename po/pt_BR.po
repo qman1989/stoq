@@ -6797,7 +6797,7 @@ msgstr "Todas as ordens de serviço"
 msgid ""
 "This will finish the selected order, marking the work as done. Are you sure?"
 msgstr ""
-"Isto irá cancelar a ordem de serviço selecionada e marcá-la como finalizada. "
+"Isto irá finalizar a ordem de serviço selecionada e marcá-la como pronta. "
 "Você tem certeza?"
 
 #: ../stoq/gui/maintenance.py:534

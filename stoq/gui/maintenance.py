@@ -364,12 +364,12 @@ class MaintenanceApp(ShellApp):
     def get_columns(self):
         return [
             IdentifierColumn('identifier', sorted=True),
-            IdentifierColumn('sale_identifier', title=_("Sale #"), visible=False),
+            IdentifierColumn('sale_identifier', title=_("Sale #"), visible=True),
             SearchColumn('work_order.status_str', title=_(u'Status'),
                          search_attribute='status', data_type=str,
-                         valid_values=self._get_status_values(), visible=False),
+                         valid_values=self._get_status_values(), visible=True),
             SearchColumn('category_name', title=_(u'Category'),
-                         data_type=str, visible=False),
+                         data_type=str, visible=True),
             SearchColumn('equipment', title=_(u'Equipment'),
                          data_type=str, expand=True, pack_end=True),
             Column('category_color', title=_(u'Equipment'), column='equipment',
@@ -382,7 +382,7 @@ class MaintenanceApp(ShellApp):
             SearchColumn('branch_name', title=_(u'Branch'),
                          data_type=str, visible=False),
             SearchColumn('current_branch_name', title=_(u'Current branch'),
-                         data_type=str, visible=False),
+                         data_type=str, visible=True),
             SearchColumn('execution_branch_name', title=_(u'Execution branch'),
                          data_type=str, visible=False),
             SearchColumn('open_date', title=_(u'Open date'),
@@ -392,11 +392,11 @@ class MaintenanceApp(ShellApp):
             SearchColumn('estimated_start', title=_(u'Estimated start'),
                          data_type=datetime.date, visible=False),
             SearchColumn('estimated_finish', title=_(u'Estimated finish'),
-                         data_type=datetime.date, visible=False),
+                         data_type=datetime.date, visible=True),
             SearchColumn('finish_date', title=_(u'Finish date'),
                          data_type=datetime.date, visible=False),
             SearchColumn('total', title=_(u'Total'),
-                         data_type=currency),
+                         data_type=currency, visible=False),
         ]
 
     def set_open_inventory(self):

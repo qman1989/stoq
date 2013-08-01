@@ -9,7 +9,12 @@
 
         <tr>
           <td>${ _("Client") }:</td>
-          <td colspan="3">${ workorder.client.person.name }</td>
+          <td colspan="3">${ workorder.client.person.name }
+          <br/> Endereço: ${ workorder.client.person.get_address_string() }
+          % if workorder.client.person.phone_number:
+              <br/> Telefone: ${ workorder.client.person.get_formatted_phone_number() }
+          % endif
+          </td>
         </tr>
 
         % if optical_data.medic:
@@ -18,19 +23,6 @@
               <td colspan="3">${ optical_data.medic.person.name } (${ optical_data.medic.crm_number })</td>
             </tr>
         % endif
-
-        <tr>
-          <td>${ _("Sale #") }:</td>
-          <td>${ report.sale.identifier }</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td>${ _("Open Date") }:</td>
-          <td>${ format_date(report.sale.open_date) }</td>
-          <td>${ _("Estimated Finish") }:</td>
-          <td>${ format_date(workorder.estimated_finish) }</td>
-        </tr>
       </tbody>
     </table>
 

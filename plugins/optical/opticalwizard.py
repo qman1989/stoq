@@ -32,10 +32,14 @@ from kiwi.datatypes import ValidationError
 from kiwi.ui.forms import PriceField, NumericField
 from kiwi.ui.objectlist import Column
 from kiwi.utils import gsignal
+from storm.expr import And, Or, Eq
 
 from stoqlib.api import api
 from stoqlib.domain.person import Client, SalesPerson
+from stoqlib.domain.product import ProductStockItem
 from stoqlib.domain.sale import Sale, SaleComment
+from stoqlib.domain.sellable import Sellable
+from stoqlib.domain.views import SellableFullStockView
 from stoqlib.domain.workorder import (WorkOrder, WorkOrderCategory,
                                       WorkOrderItem)
 from stoqlib.gui.base.dialogs import run_dialog
@@ -353,7 +357,7 @@ class _TempSaleItem(object):
 
     def update(self):
         self._work_item.price = self.price
-        self._work_item.quantity = self.quantity
+        #self._work_item.quantity = self.quantity
         self.sale_item.price = self.price
         self.sale_item.quantity = self.quantity
 
@@ -460,6 +464,18 @@ class _ItemSlave(SellableItemSlave):
     summary_label_text = "<b>%s</b>" % api.escape(_('Total:'))
     value_column = 'price'
     validate_price = True
+
+    sellable_view = SellableFullStockView
+
+    def get_sellable_view_query(self):
+        branch = api.get_current_branch(self.store)
+        branch_query = Or(ProductStockItem.branch_id == branch.id,
+                          Eq(ProductStockItem.branch_id, None))
+        query = And(branch_query,
+                    Sellable.get_available_sellables_query(self.store))
+        return self.sellable_view, query
+
+
 
     #
     #   SellableItemSlave implementation

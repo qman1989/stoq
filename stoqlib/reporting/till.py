@@ -78,6 +78,8 @@ class TillDailyMovementReport(HTMLReport):
 
         for p in store.find(InPaymentView, query).order_by(Sale.identifier, Payment.identifier):
             if p.sale:
+                if p.sale.status == Sale.STATUS_RETURNED:
+                    continue
                 sale_payments = self.sales.setdefault(p.sale, {})
                 details = ''
                 method_desc = p.method.get_description()
