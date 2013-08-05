@@ -24,11 +24,13 @@
 """ Dialog to open the inventory """
 
 from kiwi.ui.objectlist import Column
+from storm.expr import Join, LeftJoin, And
 
 from stoqlib.api import api
 from stoqlib.domain.inventory import Inventory
 from stoqlib.domain.sellable import Sellable, SellableCategory
-from stoqlib.domain.product import Product, ProductManufacturer
+from stoqlib.domain.product import (Product, ProductManufacturer, Storable,
+                                    StorableBatch, ProductStockItem)
 from stoqlib.gui.editors.baseeditor import BaseEditor
 from stoqlib.lib.dateutils import localnow
 from stoqlib.lib.message import info
@@ -131,25 +133,33 @@ class InventoryOpenEditor(BaseEditor):
 
         return tmp_category
 
-    def _get_sellables(self):
+    def _get_sellables(self, branch):
         selected = [c.category for c in self.category_tree if
                     c.selected and c is not self._uncategorized_products]
         include_uncategorized = self._uncategorized_products.selected
 
-        sellables = Sellable.get_unblocked_by_categories(
+        query = Sellable.get_unblocked_by_categories_query(
             self.store, selected, include_uncategorized)
-
+        queries = [query]
         if self.model.product_manufacturer:
-            sellables = sellables.find(Product.manufacturer ==
-                                       self.model.product_manufacturer)
+            queries.append(Product.manufacturer == self.model.product_manufacturer)
         if self.model.product_brand:
-            sellables = sellables.find(Product.brand ==
-                                       self.model.product_brand)
+            queries.append(Product.brand == self.model.product_brand)
         if self.model.product_family:
-            sellables = sellables.find(Product.family ==
-                                       self.model.product_family)
+            queries.append(Product.family == self.model.product_family)
 
-        return sellables
+        queries.append(ProductStockItem.branch_id == branch.id)
+        tables = [Sellable,
+                  Join(Product, Product.sellable_id == Sellable.id),
+                  Join(Storable, Storable.product_id == Product.id),
+                  LeftJoin(StorableBatch, StorableBatch.storable_id == Storable.id),
+                  LeftJoin(ProductStockItem,
+                    And(ProductStockItem.storable_id == Storable.id,
+                        ProductStockItem.batch_id == StorableBatch.id)),
+                  ]
+        return self.store.using(*tables).find(
+            (Sellable, Product, Storable, StorableBatch, ProductStockItem),
+            And(*queries))
 
     def _select(self, categories, select_value):
         if not categories:
@@ -183,9 +193,7 @@ class InventoryOpenEditor(BaseEditor):
         self._update_widgets()
 
     def validate_confirm(self):
-        # This is a generator. It'll be evaluated to True
-        # even if it's len should be 0. Use a list for comparison instead.
-        if not list(self._get_sellables()):
+        if self._get_sellables(self.model.branch).is_empty():
             info(_(u'No products have been found in the selected '
                    'categories.'))
             return False
@@ -199,17 +207,14 @@ class InventoryOpenEditor(BaseEditor):
         inventory = Inventory(open_date=self.model.open_date,
                               branch=branch, responsible=responsible,
                               store=self.store)
-        for sellable in self._get_sellables():
-            storable = sellable.product_storable
-            if storable is None:
-                continue
-
+        for sellable, product, storable, batch, stock_item in self._get_sellables(branch):
+            quantity = stock_item and stock_item.quantity or 0
             if storable.is_batch:
-                for batch in storable.get_available_batches(inventory.branch):
-                    inventory.add_sellable(sellable,
-                                           batch_number=batch.batch_number)
+                if batch and stock_item and quantity > 0:
+                    inventory.add_storable(storable, product, sellable, quantity,
+                                           batch=batch)
             else:
-                inventory.add_sellable(sellable)
+                inventory.add_storable(storable, product, sellable, quantity)
 
     #
     # Kiwi Callback

@@ -31,7 +31,7 @@ from kiwi.currency import currency
 from kiwi.ui.widgets.list import Column
 
 from stoqlib.reporting.inventory import InventoryReport
-from stoqlib.domain.inventory import Inventory
+from stoqlib.domain.inventory import Inventory, InventoryItemsView
 from stoqlib.lib.translation import stoqlib_gettext
 from stoqlib.gui.editors.baseeditor import BaseEditor
 from stoqlib.gui.utils.printing import print_report
@@ -67,32 +67,30 @@ class InventoryDetailsDialog(BaseEditor):
         """ Creates a new InventoryDetailsDialog object
 
         :param store: a store
-        :param model: a :class:`stoqlib.domain.inventory.InventoryView` object
+        :param model: a :class:`stoqlib.domain.inventory.Inventory` object
         """
         BaseEditor.__init__(self, store, model,
                             visual_mode=visual_mode)
 
     def _setup_widgets(self):
         self.items_list.set_columns(self._get_items_columns())
-
-        self.items_list.add_list(self.model.get_items())
+        items = InventoryItemsView.find_by_inventory(self.model.store, self.model)
+        self.items_list.add_list(items)
 
     def _get_items_columns(self):
         return [Column('code', _("Code"), sorted=True,
                        data_type=str, justify=gtk.JUSTIFY_CENTER),
                 Column('description',
                        _("Description"), data_type=str, width=200,
-                       expand=True, justify=gtk.JUSTIFY_LEFT),
+                       expand=True),
                 Column('recorded_quantity',
-                       _("Recorded"), data_type=decimal.Decimal,
-                       justify=gtk.JUSTIFY_LEFT),
+                       _("Recorded"), data_type=decimal.Decimal),
+                Column('counted_quantity',
+                       _("Counted"), data_type=decimal.Decimal),
                 Column('actual_quantity',
-                       _("Actual"), data_type=decimal.Decimal,
-                       justify=gtk.JUSTIFY_LEFT),
-                Column('is_adjusted', _("Adjusted"), data_type=bool,
-                       justify=gtk.JUSTIFY_CENTER),
-                Column('product_cost', _("Cost"), data_type=currency,
-                       justify=gtk.JUSTIFY_LEFT, visible=False)]
+                       _("Actual"), data_type=decimal.Decimal),
+                Column('is_adjusted', _("Adjusted"), data_type=bool),
+                Column('product_cost', _("Cost"), data_type=currency, visible=False)]
 
     #
     # BaseEditor hooks

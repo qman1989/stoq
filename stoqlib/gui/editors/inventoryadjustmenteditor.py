@@ -43,6 +43,10 @@ from stoqlib.lib.translation import stoqlib_gettext
 _ = stoqlib_gettext
 
 
+from storm.expr import Join, LeftJoin
+from stoqlib.domain.product import Product, Storable, StorableBatch
+from stoqlib.domain.sellable import Sellable
+
 class InventoryAdjustmentEditor(BaseEditor):
     title = _(u"Products Adjustment")
     gladefile = "InventoryAdjustmentEditor"
@@ -50,6 +54,18 @@ class InventoryAdjustmentEditor(BaseEditor):
     size = (750, 450)
 
     def __init__(self, store, model):
+        tables = [InventoryItem,
+                  Join(Product, Product.id == InventoryItem.product_id),
+                  Join(Storable, Product.id == Storable.product_id),
+                  Join(Sellable, Sellable.id == Product.sellable_id),
+                  LeftJoin(StorableBatch, InventoryItem.batch_id ==
+                           StorableBatch.id),
+                  ]
+        # Cache this data
+        self._data = list(store.using(*tables).find(
+            (InventoryItem, Sellable, Product, Storable, StorableBatch),
+            InventoryItem.inventory_id == model.id))
+
         self._has_adjusted_any = False
         BaseEditor.__init__(self, store, model)
         self._setup_widgets()

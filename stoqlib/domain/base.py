@@ -360,11 +360,12 @@ class Domain(ORMObject):
                 attr.name, expected_type))
 
     @classmethod
-    def validate_batch(cls, batch, sellable):
+    def validate_batch(cls, batch, sellable, storable=None):
         """Verifies if the given |batch| is valid for the given |sellable|.
         """
-        product = sellable.product
-        storable = product and product.storable or None
+        if not storable:
+            product = sellable.product
+            storable = product and product.storable or None
 
         if not batch:
             # When batch is not given, the only accepted scenarios are that storable is

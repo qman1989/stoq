@@ -279,7 +279,7 @@ class Inventory(Domain):
     # Public API
     #
 
-    def add_sellable(self, sellable, batch_number=None):
+    def add_storable(self, storable, product, sellable, quantity, batch=None, batch_number=None):
         """Add a sellable in this inventory
 
         Note that the :attr:`item's quantity <InventoryItem.recorded_quantity>`
@@ -291,24 +291,15 @@ class Inventory(Domain):
             getting the |batch| directly since we may be adding an item
             not registered before
         """
-        product = sellable.product
-        storable = product.storable
-        if storable is None:
-            raise TypeError("product %r has no storable" % (product, ))
-
-        if batch_number is not None:
+        if batch_number is not None and not batch:
             batch = StorableBatch.get_or_create(self.store,
                                                 storable=storable,
                                                 batch_number=batch_number)
-            quantity = batch.get_balance_for_branch(self.branch)
-        else:
-            batch = None
-            quantity = storable.get_balance_for_branch(self.branch)
 
-        self.validate_batch(batch, sellable)
+        self.validate_batch(batch, sellable, storable=storable)
 
         return InventoryItem(store=self.store,
-                             product=sellable.product,
+                             product=product,
                              batch=batch,
                              product_cost=sellable.cost,
                              recorded_quantity=quantity,
@@ -462,6 +453,7 @@ class InventoryItemsView(Viewable):
     # Person
     responsible_name = Person.name
 
+    code = Sellable.code
     description = Sellable.description
 
     tables = [
@@ -477,13 +469,24 @@ class InventoryItemsView(Viewable):
     ]
 
     @classmethod
+    def find_by_inventory(cls, store, inventory):
+        """find results for this view that are related to the given inventory
+
+        :param store: the store that will be used to find the results
+        :param inventory: the |inventory| that should be filtered
+        :returns: the matching views
+        :rtype: a sequence of :class:`InventoryItemView`
+        """
+        return store.find(cls, Inventory.id == inventory.id)
+
+    @classmethod
     def find_by_product(cls, store, product):
         """find results for this view that references *product*
 
         :param store: the store that will be used to find the results
         :param product: the |product| used to filter the results
         :returns: the matching views
-        :rtype: a sequence of :cimporlass:`InventoryItemView`
+        :rtype: a sequence of :class:`InventoryItemView`
         """
         return store.find(cls, product_id=product.id)
 

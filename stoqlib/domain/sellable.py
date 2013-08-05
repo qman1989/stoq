@@ -961,8 +961,8 @@ class Sellable(Domain):
         return store.find(cls, query)
 
     @classmethod
-    def get_unblocked_by_categories(cls, store, categories,
-                                    include_uncategorized=True):
+    def get_unblocked_by_categories_query(cls, store, categories,
+                                          include_uncategorized=True):
         """Returns the available sellables by a list of categories.
 
         :param store: a store
@@ -978,5 +978,21 @@ class Sellable(Domain):
         if include_uncategorized:
             queries.append(Eq(Sellable.category_id, None))
 
-        sellables = cls.get_unblocked_sellables(store)
-        return sellables.find(Or(*queries))
+        query = cls.get_unblocked_sellables_query(store, storable=True)
+        return And(query, (Or(*queries)))
+
+    @classmethod
+    def get_unblocked_by_categories(cls, store, categories,
+                                    include_uncategorized=True):
+        """Returns the available sellables by a list of categories.
+
+        :param store: a store
+        :param categories: a list of SellableCategory instances
+        :param include_uncategorized: whether or not include the sellables
+            without a category
+
+        :rtype: generator of sellables
+        """
+        query = cls.get_unblocked_by_categories_query(store, categories,
+                                                      include_uncategorized)
+        return store.find(cls, query)
