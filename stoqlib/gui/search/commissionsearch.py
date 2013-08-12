@@ -58,7 +58,7 @@ class CommissionSearch(SearchDialog):
 
         persons = [p.person.name for p in
                    self.store.find(SalesPerson)]
-        persons = list(zip(persons, persons))
+        persons = sorted(list(zip(persons, persons)))
         persons.insert(0, (_('Anyone'), None))
         salesperson_filter = ComboSearchFilter(_('Sold by:'), persons)
         self.add_filter(salesperson_filter, SearchFilterPosition.TOP,
